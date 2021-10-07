@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,10 +19,8 @@ func Open(cfg Config) (*mongo.Client, error) {
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 	defer client.Disconnect(ctx)
-	log.Println("connected to Database")
 	return client, nil
 }
