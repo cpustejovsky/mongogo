@@ -15,7 +15,7 @@ import (
 // Config contains all the mandatory systems required by handlers.
 type Config struct {
 	Log *zap.SugaredLogger
-	DB  *mongo.Client
+	DB  *mongo.Database
 }
 
 // Routes binds all the version 1 routes.

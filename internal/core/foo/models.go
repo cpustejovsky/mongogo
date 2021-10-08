@@ -12,6 +12,7 @@ type Foo struct {
 	Name        string    `json:"id"`
 	Age         int       `json:"age"`
 	DateCreated time.Time `json:"date_created"`
+	DateUpdated time.Time `json:"date_updated"`
 }
 
 // NewFoo contains information needed to create a new Foo.
