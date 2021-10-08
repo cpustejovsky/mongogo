@@ -13,8 +13,9 @@ import (
 	"time"
 
 	"github.com/ardanlabs/conf/v2"
+	"github.com/cpustejovsky/mongogo/app/default/handlers"
 	"github.com/cpustejovsky/mongogo/foundation/logger"
-	"github.com/cpustejovsky/mongogo/internal/data/sys/database"
+	"github.com/cpustejovsky/mongogo/internal/sys/database"
 	"github.com/joho/godotenv"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -155,12 +156,12 @@ func run(log *zap.SugaredLogger) error {
 	// related endpoints. This include the standard library endpoints.
 
 	// Construct the mux for the debug calls.
-	// debugMux := handlers.DebugMux(build, log, db)
+	debugMux := handlers.DebugMux(build, log, client)
 
 	// Start the service listening for debug requests.
 	// Not concerned with shutting this down with load shedding.
 	go func() {
-		if err := http.ListenAndServe(cfg.Web.DebugHost, http.DefaultServeMux); err != nil {
+		if err := http.ListenAndServe(cfg.Web.DebugHost, debugMux); err != nil {
 			log.Errorw("shutdown", "status", "debug v1 router closed", "host", cfg.Web.DebugHost, "ERROR", err)
 		}
 	}()
@@ -174,18 +175,16 @@ func run(log *zap.SugaredLogger) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
-	// TODO: Construct the mux for the API calls.
-	// apiMux := handlers.APIMux(handlers.APIMuxConfig{
-	// 	Shutdown: shutdown,
-	// 	Log:      log,
-	// 	Auth:     auth,
-	// 	DB:       db,
-	// })
+	apiMux := handlers.APIMux(handlers.APIMuxConfig{
+		Shutdown: shutdown,
+		Log:      log,
+		DB:       client,
+	})
 
 	// Construct a server to service the requests against the mux.
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      http.DefaultServeMux,
+		Handler:      apiMux,
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 		IdleTimeout:  cfg.Web.IdleTimeout,
@@ -239,7 +238,6 @@ func startTracing(serviceName string, reporterURI string, probability float64) (
 
 	exporter, err := zipkin.New(
 		reporterURI,
-		// zipkin.WithLogger(zap.NewStdLog(log)),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("creating new exporter: %w", err)
