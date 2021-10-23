@@ -21,17 +21,18 @@ func Routes(log *log.Logger, client *mongo.Client) http.Handler {
 
 	mux := pat.New()
 
-	database := client.Database("mongogo_domains")
-	collection := database.Collection("domains")
+	database := client.Database("mongogo")
+	collection := database.Collection("users")
 
-	domainHandlers := handlers.Handler{
+	userHandlers := handlers.Handler{
 		Logger:     log,
 		Collection: collection,
 	}
-	mux.Put("/events/:domain_name/delivered", standardMiddleware.ThenFunc(domainHandlers.UpdateDelivered))
-	mux.Put("/events/:domain_name/bounced", standardMiddleware.ThenFunc(domainHandlers.UpdateBounced))
-	mux.Get("/domains/:domain_name", standardMiddleware.ThenFunc(domainHandlers.CheckStatus))
-	mux.Get("/ping", standardMiddleware.ThenFunc(domainHandlers.Ping))
+	mux.Post("/api/ping", standardMiddleware.ThenFunc(userHandlers.Ping))
+	mux.Post("/api/user/new", standardMiddleware.ThenFunc(userHandlers.Create))
+	mux.Get("/api/user/:id", standardMiddleware.ThenFunc(userHandlers.Fetch))
+	mux.Put("/api/user/:id", standardMiddleware.ThenFunc(userHandlers.Update))
+	mux.Del("/api/user/:id", standardMiddleware.ThenFunc(userHandlers.Delete))
 
-	return mux
+	return standardMiddleware.Then(mux)
 }
