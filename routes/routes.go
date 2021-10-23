@@ -28,11 +28,11 @@ func Routes(log *log.Logger, client *mongo.Client) http.Handler {
 		Logger:     log,
 		Collection: collection,
 	}
-	mux.Post("/api/ping", standardMiddleware.ThenFunc(userHandlers.Ping))
-	mux.Post("/api/user/new", standardMiddleware.ThenFunc(userHandlers.Create))
-	mux.Get("/api/user/:id", standardMiddleware.ThenFunc(userHandlers.Fetch))
-	mux.Put("/api/user/:id", standardMiddleware.ThenFunc(userHandlers.Update))
-	mux.Del("/api/user/:id", standardMiddleware.ThenFunc(userHandlers.Delete))
+	mux.Get("/api/ping", http.HandlerFunc(userHandlers.Ping))
+	mux.Post("/api/user/new", http.HandlerFunc(userHandlers.Create))
+	mux.Get("/api/user/:id", http.HandlerFunc(userHandlers.Fetch))
+	mux.Put("/api/user/:id", http.HandlerFunc(userHandlers.Update))
+	mux.Del("/api/user/:id", http.HandlerFunc(userHandlers.Delete))
 
 	return standardMiddleware.Then(mux)
 }
