@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/cpustejovsky/mongogo/helpers"
-	"github.com/cpustejovsky/mongogo/internal/models/mongodb/domains"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -19,35 +16,22 @@ func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-func (h *Handler) UpdateDelivered(w http.ResponseWriter, r *http.Request) {
-	domain := r.URL.Query().Get(":domain_name")
-
-	err := domains.UpdateDelivered(h.Collection, domain)
-	if err != nil {
-		helpers.ServerError(h.Logger, w, err)
-		return
-	}
-	fmt.Fprintf(w, "Successfully updated number of delivered emails for %v", domain)
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
+	//get JSON body and decode
+	//create new document within mongodb table
 }
 
-func (h *Handler) UpdateBounced(w http.ResponseWriter, r *http.Request) {
-	domain := r.URL.Query().Get(":domain_name")
-
-	err := domains.UpdateBounced(h.Collection, domain)
-	if err != nil {
-		helpers.ServerError(h.Logger, w, err)
-		return
-	}
-	fmt.Fprintf(w, "Successfully updated number of bounced emails for %v", domain)
+func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
+	//get id from url
+	//find user by id and return
 }
 
-func (h *Handler) CheckStatus(w http.ResponseWriter, r *http.Request) {
-	domain := r.URL.Query().Get(":domain_name")
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+	//get id from url
+	//find and update user with id
+}
 
-	status, err := domains.CheckStatus(h.Collection, domain)
-	if err != nil {
-		helpers.ServerError(h.Logger, w, err)
-		return
-	}
-	fmt.Fprintf(w, "Domain %v is status %v", domain, status)
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+	//get id from url
+	//find and delete user with id
 }
