@@ -1,8 +1,24 @@
 # Mongogo
 
-### General Notes
-* You can monitor the debug session of this app using [expvarmon](https://github.com/divan/expvarmon)
-* You can override the build of this app using `go build -ldflags "-X main.build=<your-value-goes-her>"`
+## Description
 
-### Special Thanks / Things I used to help make this application
-* The [Ardan Labs service starter kit](https://github.com/ardanlabs/service) and [Bill Kennedy's corresponding Keynote](https://www.youtube.com/watch?v=IV0wrVb31Pg)
+Service to determine if a email domain is a catch-all domain. Pulled and modified from my [catchall](https://github.com/cpustejovsky/catchall) project
+
+## Set Up
+Move to the `app` directory and run `go build` and run `./app` to start
+
+To connect to a MongoDB database, either pass in a `-uri` flag or set a `.env` file with `MONGO_URI` as the property
+To specify a API port, pass in a `-addr` flag
+To specify a pprof port, pass in a `-pprof` flag
+
+## Usage
+
+Starter kit for a Go service using MongoDB as database
+
+## To-Dos
+* Separate Database actions from domain
+* Add CRUD functionality for users
+* Add integration tests for domain methods
+* Add authentication
+* Add metrics
+* Make better use of the `context` package
