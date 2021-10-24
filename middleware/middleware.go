@@ -31,7 +31,7 @@ func (m *Middleware) SecureHeaders(next http.Handler) http.Handler {
 func (m *Middleware) SetRequestId(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := uuid.New()
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "requestId", id)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "requestId", id.String())))
 	})
 }
 
@@ -47,11 +47,12 @@ func (m *Middleware) RecoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
+				id := r.Context().Value("requestId")
+				m.Logger.WithFields(logrus.Fields{"URI": r.URL.RequestURI(), "ID": id}).Error("Error")
 				w.Header().Set("Connection", "close")
 				helpers.ServerError(m.Logger, w, fmt.Errorf("%s", err))
 			}
 		}()
-
 		next.ServeHTTP(w, r)
 	})
 }
