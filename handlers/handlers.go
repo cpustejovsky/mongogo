@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -14,6 +15,13 @@ type Handler struct {
 
 func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
+}
+
+func (h *Handler) PingPanic(w http.ResponseWriter, r *http.Request) {
+	id := r.Context().Value("requestId")
+	idstr := fmt.Sprintf("Reqyest ID: %v\n", id)
+	w.Write([]byte(idstr))
+	panic("foo")
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {

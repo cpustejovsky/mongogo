@@ -29,6 +29,7 @@ func Routes(log *logrus.Logger, client *mongo.Client) http.Handler {
 		Collection: collection,
 	}
 	mux.Get("/api/ping", http.HandlerFunc(userHandlers.Ping))
+	mux.Get("/api/panic", http.HandlerFunc(userHandlers.PingPanic))
 	mux.Post("/api/user/new", http.HandlerFunc(userHandlers.Create))
 	mux.Get("/api/user/:id", http.HandlerFunc(userHandlers.Fetch))
 	mux.Put("/api/user/:id", http.HandlerFunc(userHandlers.Update))
