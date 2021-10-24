@@ -7,17 +7,17 @@ import (
 	"github.com/cpustejovsky/mongogo/handlers"
 	"github.com/cpustejovsky/mongogo/middleware"
 	"github.com/justinas/alice"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Routes(log *log.Logger, client *mongo.Client) http.Handler {
+func Routes(log *logrus.Logger, client *mongo.Client) http.Handler {
 
 	middlewares := middleware.Middleware{
 		Logger: log,
 	}
 
-	standardMiddleware := alice.New(middlewares.RecoverPanic, middlewares.SecureHeaders, middlewares.LogRequest)
+	standardMiddleware := alice.New(middlewares.SetRequestId, middlewares.RecoverPanic, middlewares.SecureHeaders, middlewares.LogRequest)
 
 	mux := pat.New()
 
