@@ -1,13 +1,30 @@
-package domains
+package user
 
 import (
 	"context"
 	"errors"
 
+	"github.com/cpustejovsky/mongogo/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+func Create(collection *mongo.Collection, user models.User) (models.User, error) {
+	return models.User{}, nil
+}
+
+func Fetch(collection *mongo.Collection, id string) (models.User, error) {
+	return models.User{}, nil
+}
+
+func Update(collection *mongo.Collection, id string, user models.User) (models.User, error) {
+	return models.User{}, nil
+}
+
+func Delete(collection *mongo.Collection, id string) error {
+	return nil
+}
 
 func UpdateDelivered(collection *mongo.Collection, name string) error {
 

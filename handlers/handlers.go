@@ -36,6 +36,7 @@ func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	//get id from url
+	//get JSON body and decode
 	//find and update user with id
 }
 

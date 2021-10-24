@@ -8,8 +8,9 @@ var (
 	ErrNoRecord = errors.New("models: no matching record found")
 )
 
-type Domain struct {
-	Name      string ``
-	Bounced   int    ``
-	Delivered int    ``
+type User struct {
+	Name string ``
+	Email string ``
+	Age int ``
+	Active bool ``
 }
