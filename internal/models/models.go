@@ -9,8 +9,8 @@ var (
 )
 
 type User struct {
-	Name string ``
-	Email string ``
-	Age int ``
-	Active bool ``
+	Name   string ``
+	Email  string ``
+	Age    int    ``
+	Active bool   ``
 }

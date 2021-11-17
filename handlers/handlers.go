@@ -19,7 +19,7 @@ func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) PingPanic(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("requestId")
-	idstr := fmt.Sprintf("Reqyest ID: %v\n", id)
+	idstr := fmt.Sprintf("Request ID: %v\n", id)
 	w.Write([]byte(idstr))
 	panic("foo")
 }
