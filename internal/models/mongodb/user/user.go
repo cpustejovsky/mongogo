@@ -10,8 +10,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Create(collection *mongo.Collection, user models.User) (models.User, error) {
-	return models.User{}, nil
+func Create(collection *mongo.Collection, user models.User) (interface{}, error) {
+	insertResult, err := collection.InsertOne(context.TODO(), user)
+	if err != nil {
+		return nil, err
+	}
+	return insertResult.InsertedID, nil
 }
 
 func Fetch(collection *mongo.Collection, id string) (models.User, error) {
