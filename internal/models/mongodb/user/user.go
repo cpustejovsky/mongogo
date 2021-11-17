@@ -15,40 +15,14 @@ func Create(collection *mongo.Collection, user models.User) (models.User, error)
 }
 
 func Fetch(collection *mongo.Collection, id string) (models.User, error) {
-	user := bson.M{}
+	var user models.User
 	err := collection.FindOne(context.TODO(), bson.M{
 		"id": id,
 	}).Decode(&user)
 	if err != nil {
 		return models.User{}, err
 	}
-	//TODO is there a better way to extract properties from bson.M?
-	name, ok := user["name"].(string)
-	if !ok {
-		error := errors.New("Bounced did not convert to integer")
-		return models.User{}, error
-	}
-	email, ok := user["email"].(string)
-	if !ok {
-		error := errors.New("Bounced did not convert to integer")
-		return models.User{}, error
-	}
-	age, ok := user["age"].(int)
-	if !ok {
-		error := errors.New("Bounced did not convert to integer")
-		return models.User{}, error
-	}
-	active, ok := user["active"].(bool)
-	if !ok {
-		error := errors.New("Bounced did not convert to integer")
-		return models.User{}, error
-	}
-	return models.User{	
-		Name: name,
-		Email: email,
-		Age: age,
-		Active: active,	
-	}, nil
+	return user, nil
 }
 
 func Update(collection *mongo.Collection, id string, user models.User) (models.User, error) {
