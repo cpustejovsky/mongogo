@@ -1,15 +1,7 @@
 package models
 
-import (
-	"errors"
-)
-
-var (
-	ErrNoRecord = errors.New("models: no matching record found")
-)
-
 type User struct {
-	ID string ``
+	ID     string ``
 	Name   string ``
 	Email  string ``
 	Age    int    ``
