@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 
 	"github.com/cpustejovsky/mongogo/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,7 +20,7 @@ func Create(collection *mongo.Collection, user models.User) (interface{}, error)
 func Fetch(collection *mongo.Collection, id string) (models.User, error) {
 	var user models.User
 	err := collection.FindOne(context.TODO(), bson.M{
-		"id": id,
+		"_id": id,
 	}).Decode(&user)
 	if err != nil {
 		return models.User{}, err
@@ -32,7 +31,7 @@ func Fetch(collection *mongo.Collection, id string) (models.User, error) {
 func Update(collection *mongo.Collection, id string, updatedUser models.User) (models.User, error) {
 	var user models.User
 	filter := bson.M{
-		"id": id,
+		"_id": id,
 	}
 	update := bson.M{
 		"$set": bson.M{
@@ -59,5 +58,9 @@ func Update(collection *mongo.Collection, id string, updatedUser models.User) (m
 }
 
 func Delete(collection *mongo.Collection, id string) error {
+	_, err := collection.DeleteOne(context.TODO(), bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
 	return nil
 }
