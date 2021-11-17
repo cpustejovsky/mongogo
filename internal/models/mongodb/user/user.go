@@ -29,8 +29,33 @@ func Fetch(collection *mongo.Collection, id string) (models.User, error) {
 	return user, nil
 }
 
-func Update(collection *mongo.Collection, id string, user models.User) (models.User, error) {
-	return models.User{}, nil
+func Update(collection *mongo.Collection, id string, updatedUser models.User) (models.User, error) {
+	var user models.User
+	filter := bson.M{
+		"id": id,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"name":   updatedUser.Name,
+			"email":  updatedUser.Email,
+			"age":    updatedUser.Age,
+			"active": updatedUser.Active,
+		},
+	}
+
+	upsert := true
+	after := options.After
+	opt := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
+	}
+
+	result := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt)
+	if result.Err() != nil {
+		return user, result.Err()
+	}
+	decodeErr := result.Decode(&user)
+	return user, decodeErr
 }
 
 func Delete(collection *mongo.Collection, id string) error {
