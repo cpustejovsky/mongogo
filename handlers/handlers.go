@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cpustejovsky/mongogo/helpers"
+	"github.com/cpustejovsky/mongogo/internal/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -26,6 +28,17 @@ func (h *Handler) PingPanic(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	//get JSON body and decode
+	var formUser models.User
+	user, err := helpers.DecodeForm(r, formUser)
+	if err != nil {
+		if err == helpers.EmptyBodyError {
+			fmt.Fprint(w, err)
+			return
+		}
+		helpers.ServerError(h.Logger, w, err)
+		return
+	}
+	fmt.Fprint(w, user)
 	//create new document within mongodb table
 }
 
