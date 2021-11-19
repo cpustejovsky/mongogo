@@ -53,9 +53,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, helpers.MissingPropertyError(missingProperties))
 		return
 	}
-
-	fmt.Fprint(w, *fUser.Name)
 	//create new document within mongodb table
+	user, err := user.Create(h.Collection, fUser)
+	if err != nil {
+		fmt.Fprint(w, errors.New("Unable to Update Item"))
+		return
+	}
+	fmt.Fprint(w, user)
 }
 
 func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
