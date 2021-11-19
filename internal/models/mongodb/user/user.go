@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Create(collection *mongo.Collection, user models.User) (interface{}, error) {
+func Create(collection *mongo.Collection, user models.FormUser) (interface{}, error) {
 	insertResult, err := collection.InsertOne(context.TODO(), user)
 	if err != nil {
 		return nil, err
