@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/cpustejovsky/mongogo/helpers"
 	log "github.com/sirupsen/logrus"
@@ -57,16 +58,42 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
 	//get id from url
+	id := strings.TrimPrefix(r.URL.Path, "/api/user/")
 	//find user by id and return
+	fmt.Fprint(w, id)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	//get id from url
+	id := strings.TrimPrefix(r.URL.Path, "/api/user/")
 	//get JSON body and decode
+	fUser, err := helpers.DecodeUserForm(r)
+	if err != nil {
+		if err == helpers.EmptyBodyError {
+			fmt.Fprint(w, err)
+			return
+		}
+		helpers.ServerError(h.Logger, w, err)
+		return
+	}
+	updateUser := make(map[string]interface{})
+	updateUser["_id"] = id
+	if fUser.Name != nil {
+		updateUser["name"] = *fUser.Name
+	}
+	if fUser.Age != nil {
+		updateUser["age"] = *fUser.Age
+	}
+	if fUser.Email != nil {
+		updateUser["email"] = *fUser.Email
+	}
+	fmt.Fprint(w, updateUser)
 	//find and update user with id
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	//get id from url
+	id := strings.TrimPrefix(r.URL.Path, "/api/user/")
 	//find and delete user with id
+	fmt.Fprint(w, id)
 }
