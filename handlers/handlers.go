@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/cpustejovsky/mongogo/helpers"
-	"github.com/cpustejovsky/mongogo/internal/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -28,8 +27,7 @@ func (h *Handler) PingPanic(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	//get JSON body and decode
-	var formUser models.User
-	user, err := helpers.DecodeForm(r, formUser)
+	fUser, err := helpers.DecodeUserForm(r)
 	if err != nil {
 		if err == helpers.EmptyBodyError {
 			fmt.Fprint(w, err)
@@ -38,7 +36,22 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		helpers.ServerError(h.Logger, w, err)
 		return
 	}
-	fmt.Fprint(w, user)
+	missingProperties := []string{}
+	if fUser.Name == nil {
+		missingProperties = append(missingProperties, "Name")
+	}
+	if fUser.Age == nil {
+		missingProperties = append(missingProperties, "Age")
+	}
+	if fUser.Email == nil {
+		missingProperties = append(missingProperties, "Email")
+	}
+	if len(missingProperties) > 0 {
+		fmt.Fprint(w, helpers.MissingPropertyError(missingProperties))
+		return
+	}
+
+	fmt.Fprint(w, *fUser.Name)
 	//create new document within mongodb table
 }
 
