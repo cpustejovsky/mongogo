@@ -10,7 +10,12 @@ import (
 )
 
 func Create(collection *mongo.Collection, user models.FormUser) (interface{}, error) {
-	insertResult, err := collection.InsertOne(context.TODO(), user)
+	insertResult, err := collection.InsertOne(context.TODO(), bson.D{
+		{"name", *user.Name},
+		{"age", *user.Age},
+		{"email", *user.Email},
+		{"active", true},
+	})
 	if err != nil {
 		return nil, err
 	}
