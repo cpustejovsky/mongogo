@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/cpustejovsky/mongogo/helpers"
+	"github.com/cpustejovsky/mongogo/internal/models/mongodb/user"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -89,6 +91,12 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprint(w, updateUser)
 	//find and update user with id
+	user, err := user.Update(h.Collection, updateUser)
+	if err != nil {
+		fmt.Fprint(w, errors.New("Unable to Update Item"))
+		return
+	}
+	fmt.Fprint(w, user)
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
