@@ -28,18 +28,13 @@ func Fetch(collection *mongo.Collection, id string) (models.User, error) {
 	return user, nil
 }
 
-func Update(collection *mongo.Collection, id string, updatedUser models.User) (models.User, error) {
+func Update(collection *mongo.Collection, updatedUser map[string]interface{}) (models.User, error) {
 	var user models.User
 	filter := bson.M{
-		"_id": id,
+		"_id": updatedUser["_id"],
 	}
 	update := bson.M{
-		"$set": bson.M{
-			"name":   updatedUser.Name,
-			"email":  updatedUser.Email,
-			"age":    updatedUser.Age,
-			"active": updatedUser.Active,
-		},
+		"$set": updatedUser,
 	}
 
 	upsert := true
