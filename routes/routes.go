@@ -7,31 +7,33 @@ import (
 	"github.com/cpustejovsky/mongogo/handlers"
 	"github.com/cpustejovsky/mongogo/middleware"
 	"github.com/justinas/alice"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Routes(log *log.Logger, client *mongo.Client) http.Handler {
+func Routes(log *logrus.Logger, client *mongo.Client) http.Handler {
 
 	middlewares := middleware.Middleware{
 		Logger: log,
 	}
 
-	standardMiddleware := alice.New(middlewares.RecoverPanic, middlewares.SecureHeaders, middlewares.LogRequest)
+	standardMiddleware := alice.New(middlewares.SetRequestId, middlewares.RecoverPanic, middlewares.SecureHeaders, middlewares.LogRequest)
 
 	mux := pat.New()
 
-	database := client.Database("mongogo_domains")
-	collection := database.Collection("domains")
+	database := client.Database("mongogo")
+	collection := database.Collection("users")
 
-	domainHandlers := handlers.Handler{
+	userHandlers := handlers.Handler{
 		Logger:     log,
 		Collection: collection,
 	}
-	mux.Put("/events/:domain_name/delivered", standardMiddleware.ThenFunc(domainHandlers.UpdateDelivered))
-	mux.Put("/events/:domain_name/bounced", standardMiddleware.ThenFunc(domainHandlers.UpdateBounced))
-	mux.Get("/domains/:domain_name", standardMiddleware.ThenFunc(domainHandlers.CheckStatus))
-	mux.Get("/ping", standardMiddleware.ThenFunc(domainHandlers.Ping))
+	mux.Get("/api/ping", http.HandlerFunc(userHandlers.Ping))
+	mux.Get("/api/panic", http.HandlerFunc(userHandlers.PingPanic))
+	mux.Post("/api/user/new", http.HandlerFunc(userHandlers.Create))
+	mux.Get("/api/user/:id", http.HandlerFunc(userHandlers.Fetch))
+	mux.Put("/api/user/:id", http.HandlerFunc(userHandlers.Update))
+	mux.Del("/api/user/:id", http.HandlerFunc(userHandlers.Delete))
 
-	return mux
+	return standardMiddleware.Then(mux)
 }

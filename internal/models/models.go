@@ -1,15 +1,15 @@
 package models
 
-import (
-	"errors"
-)
+type User struct {
+	ID     string `json:"id, omitempty"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Age    int    `json:"age"`
+	Active bool   `json:"active, omitempty"`
+}
 
-var (
-	ErrNoRecord = errors.New("models: no matching record found")
-)
-
-type Domain struct {
-	Name      string ``
-	Bounced   int    ``
-	Delivered int    ``
+type FormUser struct {
+	Name  *string `json:"name"`
+	Email *string `json:"email"`
+	Age   *int    `json:"age"`
 }

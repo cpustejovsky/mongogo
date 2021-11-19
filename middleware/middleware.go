@@ -1,8 +1,11 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
 
 	"github.com/cpustejovsky/mongogo/helpers"
 	"github.com/sirupsen/logrus"
@@ -24,10 +27,19 @@ func (m *Middleware) SecureHeaders(next http.Handler) http.Handler {
 	})
 }
 
+//TODO: add type safety around requestId key and value
+func (m *Middleware) SetRequestId(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := uuid.New()
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "requestId", id.String())))
+	})
+}
+
 func (m *Middleware) LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		m.Logger.WithFields(logrus.Fields{"Remote Address": r.RemoteAddr, "Proto": r.Proto, "Method": r.Method, "URI": r.URL.RequestURI()}).Info("Request")
-		next.ServeHTTP(w, r)
+		id := r.Context().Value("requestId")
+		m.Logger.WithFields(logrus.Fields{"Remote Address": r.RemoteAddr, "Proto": r.Proto, "Method": r.Method, "URI": r.URL.RequestURI(), "ID": id}).Info("Request")
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "ID", id)))
 	})
 }
 
@@ -35,11 +47,12 @@ func (m *Middleware) RecoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
+				id := r.Context().Value("requestId")
+				m.Logger.WithFields(logrus.Fields{"URI": r.URL.RequestURI(), "ID": id}).Error("Error")
 				w.Header().Set("Connection", "close")
 				helpers.ServerError(m.Logger, w, fmt.Errorf("%s", err))
 			}
 		}()
-
 		next.ServeHTTP(w, r)
 	})
 }
