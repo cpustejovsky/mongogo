@@ -62,7 +62,12 @@ func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
 	//get id from url
 	id := strings.TrimPrefix(r.URL.Path, "/api/user/")
 	//find user by id and return
-	fmt.Fprint(w, id)
+	user, err := user.Fetch(h.Collection, id)
+	if err != nil {
+		fmt.Fprint(w, errors.New("Unable to Fetch Item"))
+		return
+	}
+	fmt.Fprint(w, user)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
@@ -103,5 +108,10 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	//get id from url
 	id := strings.TrimPrefix(r.URL.Path, "/api/user/")
 	//find and delete user with id
-	fmt.Fprint(w, id)
+	err := user.Delete(h.Collection, id)
+	if err != nil {
+		fmt.Fprint(w, errors.New("Unable to Delete Item"))
+		return
+	}
+	fmt.Fprint(w, "successfully deleted")
 }
