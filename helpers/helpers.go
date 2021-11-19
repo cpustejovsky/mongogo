@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/cpustejovsky/mongogo/internal/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,19 +21,32 @@ func ServerError(log *log.Logger, w http.ResponseWriter, err error) {
 }
 
 //TODO: replace with generics
-func DecodeForm(r *http.Request, form interface{}) (interface{}, error) {
+func DecodeUserForm(r *http.Request) (models.FormUser, error) {
+	var form models.FormUser
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return form, err
 	}
 	if len(body) <= 0 {
-		return nil, EmptyBodyError
+		return form, EmptyBodyError
 	}
-	fmt.Println(body)
 	err = json.Unmarshal(body, &form)
 	if err != nil {
-		return nil, err
+		return form, err
 	}
 	return form, nil
+}
+
+var MissingPropertyErrorTemplateString = "Missing the following property or properties: %v"
+
+func MissingPropertyError(props []string) error {
+	var propStr string
+	for i, prop := range props {
+		if i > 0 {
+			propStr += ", "
+		}
+		propStr += prop
+	}
+	return errors.New(fmt.Sprintf(MissingPropertyErrorTemplateString, propStr))
 }
