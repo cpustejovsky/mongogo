@@ -38,7 +38,7 @@ func main() {
 	// Flag and Config Setup
 	cfg := new(Config)
 	flag.StringVar(&cfg.Addr, "addr", ":5000", "HTTP network address")
-	flag.StringVar(&cfg.Uri, "uri", "mongodb://localhost:27017/catch_all", "MongoDB URI")
+	flag.StringVar(&cfg.Uri, "uri", "mongodb://localhost:27017/mongogo", "MongoDB URI")
 	flag.StringVar(&cfg.Pprof, "pprof", ":4000", "Pprof host and port")
 	flag.Parse()
 
