@@ -17,7 +17,8 @@ Starter kit for a Go service using MongoDB as database
 
 ## To-Dos
 * Separate Database actions from domain
-* Add CRUD functionality for users
+  * Wrap `primitive.ObjectIDFromHex(id)` in a helper function in this package
+* ~~Add CRUD functionality for users~~
 * Add integration tests for domain methods
 * Add authentication
 * Add metrics
