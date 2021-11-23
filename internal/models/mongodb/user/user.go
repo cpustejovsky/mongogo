@@ -5,6 +5,7 @@ import (
 
 	"github.com/cpustejovsky/mongogo/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,9 +24,13 @@ func Create(collection *mongo.Collection, user models.FormUser) (interface{}, er
 }
 
 func Fetch(collection *mongo.Collection, id string) (models.User, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return models.User{}, err
+	}
 	var user models.User
-	err := collection.FindOne(context.TODO(), bson.M{
-		"_id": id,
+	err = collection.FindOne(context.TODO(), bson.M{
+		"_id": oid,
 	}).Decode(&user)
 	if err != nil {
 		return models.User{}, err
@@ -42,11 +47,9 @@ func Update(collection *mongo.Collection, updatedUser map[string]interface{}) (m
 		"$set": updatedUser,
 	}
 
-	upsert := true
 	after := options.After
 	opt := options.FindOneAndUpdateOptions{
 		ReturnDocument: &after,
-		Upsert:         &upsert,
 	}
 
 	result := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt)

@@ -9,6 +9,7 @@ import (
 	"github.com/cpustejovsky/mongogo/helpers"
 	"github.com/cpustejovsky/mongogo/internal/models/mongodb/user"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -56,7 +57,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	//create new document within mongodb table
 	user, err := user.Create(h.Collection, fUser)
 	if err != nil {
-		fmt.Fprint(w, errors.New("Unable to Update Item"))
+		fmt.Fprint(w, errors.New("Unable to Create Item"))
 		return
 	}
 	fmt.Fprint(w, user)
@@ -68,6 +69,7 @@ func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
 	//find user by id and return
 	user, err := user.Fetch(h.Collection, id)
 	if err != nil {
+		h.Logger.Error(err)
 		fmt.Fprint(w, errors.New("Unable to Fetch Item"))
 		return
 	}
@@ -77,6 +79,11 @@ func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	//get id from url
 	id := strings.TrimPrefix(r.URL.Path, "/api/user/")
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		helpers.ServerError(h.Logger, w, err)
+		return
+	}
 	//get JSON body and decode
 	fUser, err := helpers.DecodeUserForm(r)
 	if err != nil {
@@ -88,7 +95,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updateUser := make(map[string]interface{})
-	updateUser["_id"] = id
+	updateUser["_id"] = oid
 	if fUser.Name != nil {
 		updateUser["name"] = *fUser.Name
 	}
@@ -98,7 +105,6 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if fUser.Email != nil {
 		updateUser["email"] = *fUser.Email
 	}
-	fmt.Fprint(w, updateUser)
 	//find and update user with id
 	user, err := user.Update(h.Collection, updateUser)
 	if err != nil {
