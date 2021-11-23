@@ -23,3 +23,9 @@ Starter kit for a Go service using MongoDB as database
 * Add authentication
 * Add metrics
 * Make better use of the `context` package
+
+### For `idiomatic_structure`
+* Change helpers to a better name
+  * Potentially handlerHelpers?
+  * Generalize handlers package, include these helpers, and have a specific user handlers repo?
+* TBD
