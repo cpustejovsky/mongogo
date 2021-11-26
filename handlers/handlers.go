@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -60,7 +61,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, errors.New("Unable to Create Item"))
 		return
 	}
-	fmt.Fprint(w, user)
+	ju, err := json.Marshal(user)
+	if err != nil {
+		h.Logger.Error(err)
+		fmt.Fprint(w, errors.New("Could not marshall object"))
+	}
+	fmt.Fprint(w, string(ju))
 }
 
 func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
@@ -73,10 +79,16 @@ func (h *Handler) Fetch(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, errors.New("Unable to Fetch Item"))
 		return
 	}
-	fmt.Fprint(w, user)
+	ju, err := json.Marshal(user)
+	if err != nil {
+		h.Logger.Error(err)
+		fmt.Fprint(w, errors.New("Could not marshall object"))
+	}
+	fmt.Fprint(w, string(ju))
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	//get id from url
 	id := strings.TrimPrefix(r.URL.Path, "/api/user/")
 	oid, err := primitive.ObjectIDFromHex(id)
@@ -111,7 +123,12 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, errors.New("Unable to Update Item"))
 		return
 	}
-	fmt.Fprint(w, user)
+	ju, err := json.Marshal(user)
+	if err != nil {
+		h.Logger.Error(err)
+		fmt.Fprint(w, errors.New("Could not marshall object"))
+	}
+	fmt.Fprint(w, string(ju))
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
