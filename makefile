@@ -4,6 +4,10 @@ run:
 	cd app;\
 	go run main.go
 
+update:
+	go get -u -t -d -v ./...
+	go mod vendor
+	
 # build:
 # 	go build -ldflags "-X main.build=local"
 
