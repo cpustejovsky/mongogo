@@ -16,12 +16,12 @@ update:
 # $(shell git rev-parse --short HEAD)
 VERSION := 1.0
 
-all: service
+all: mongogo
 
-service:
+mongogo:
 	docker build \
 		-f zarf/docker/dockerfile \
-		-t service-amd64:$(VERSION) \
+		-t mongogo-amd64:$(VERSION) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
@@ -40,7 +40,7 @@ kind-up:
 		--image kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6 \
 		--name $(KIND_CLUSTER) \
 		--config zarf/k8s/kind/kind-config.yaml
-	kubectl config set-context --current --namespace=sales-system
+	kubectl config set-context --current --namespace=mongogo-system
 
 kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
@@ -48,3 +48,30 @@ kind-down:
 kind-status:
 	kubectl get nodes -o wide
 	kubectl get svc -o wide
+	kubectl get pods -o wide --watch --all-namespaces
+
+kind-status-mongogo:
+	kubectl get pods -o wide --watch --namespace=mongogo-system
+
+kind-load:
+	kind load docker-image mongogo-amd64:$(VERSION) --name $(KIND_CLUSTER)
+	# cd zarf/k8s/kind/mongogo-pod; kustomize edit set image mongogo-api-image=mongogo-api-amd64:$(VERSION)
+
+kind-apply:
+	kustomize build zarf/k8s/kind/mongogo-pod | kubectl apply -f -
+
+kind-restart:
+	kubectl rollout restart deployment mongogo-pod
+
+kind-update: all kind-load kind-restart
+
+kind-update-apply: all kind-load kind-apply
+
+kind-logs:
+	kubectl logs -l app=mongogo --all-containers=true -f --tail=100
+	# kubectl logs -l app=mongogo --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go
+
+kind-describe:
+	kubectl describe nodes
+	kubectl describe svc
+	kubectl describe pod -l app=mongogo
