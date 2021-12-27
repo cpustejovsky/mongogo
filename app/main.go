@@ -6,6 +6,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/cpustejovsky/mongogo/routes"
@@ -13,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/automaxprocs/maxprocs"
 )
 
 type Config struct {
@@ -31,6 +33,10 @@ var logger = &logrus.Logger{
 func init() {
 	if err := godotenv.Load("../../.env"); err != nil {
 		logger.Info("No .env file found")
+	}
+	if _, err := maxprocs.Set(); err != nil {
+		logger.Info("maxprocs: %w", err)
+		os.Exit(1)
 	}
 }
 
@@ -64,9 +70,10 @@ func main() {
 		Addr:    cfg.Addr,
 		Handler: routes.Routes(logger, client),
 	}
-	logger.WithField(
-		"address", cfg.Addr,
-	).Info("Starting server")
+	logger.WithFields(logrus.Fields{
+		"address": cfg.Addr,
+		"CPU":     runtime.GOMAXPROCS(0),
+	}).Info("Starting server")
 
 	go func() {
 		logger.Info(http.ListenAndServe(cfg.Pprof, nil))
