@@ -8,12 +8,6 @@ update:
 	go get -u -t -d -v ./...
 	go mod vendor
 
-# build:
-# 	go build -ldflags "-X main.build=local"
-
-# Building containers
-
-# $(shell git rev-parse --short HEAD)
 VERSION := 1.0
 
 all: mongogo
@@ -25,6 +19,31 @@ mongogo:
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
+
+# ==============================================================================
+# Modules support
+
+deps-reset:
+	git checkout -- go.mod
+	go mod tidy
+	go mod vendor
+
+tidy:
+	go mod tidy
+	go mod vendor
+
+deps-upgrade:
+	# go get $(go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -m all)
+	go get -u -t -d -v ./...
+	go mod tidy
+	go mod vendor
+
+deps-cleancache:
+	go clean -modcache
+
+list:
+	go list -mod=mod all
+
 # ==============================================================================
 # Running from within k8s/kind
 
