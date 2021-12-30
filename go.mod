@@ -3,6 +3,7 @@ module github.com/cpustejovsky/mongogo
 go 1.17
 
 require (
+	github.com/ardanlabs/conf/v2 v2.2.0
 	github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
