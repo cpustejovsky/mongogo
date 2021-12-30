@@ -14,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -31,7 +32,20 @@ func init() {
 func main() {
 
 	log, err := logger.New("DEFAULT-API")
+	if err != nil {
+		fmt.Println("Error constructing logger:", err)
+		os.Exit(1)
+	}
+	defer log.Sync()
 
+	// Perform the startup and shutdown sequence.
+	if err := run(log); err != nil {
+		log.Errorw("startup", "ERROR", err)
+		os.Exit(1)
+	}
+}
+
+func run(log *zap.SugaredLogger) error {
 	// Flag and Config Setup
 	cfg := new(Config)
 	flag.StringVar(&cfg.Addr, "addr", ":5000", "HTTP network address")
@@ -65,4 +79,5 @@ func main() {
 	// Server Start
 	err = srv.ListenAndServe()
 	log.Error(err)
+	return nil
 }
