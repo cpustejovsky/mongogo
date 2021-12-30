@@ -72,8 +72,8 @@ kind-status-mongogo:
 	kubectl get pods -o wide --watch --namespace=mongogo-system
 
 kind-load:
+	cd zarf/k8s/kind/mongogo-pod; kustomize edit set image mongogo-api-image=mongogo-api-amd64:$(VERSION)
 	kind load docker-image mongogo-amd64:$(VERSION) --name $(KIND_CLUSTER)
-	# cd zarf/k8s/kind/mongogo-pod; kustomize edit set image mongogo-api-image=mongogo-api-amd64:$(VERSION)
 
 kind-apply:
 	kustomize build zarf/k8s/kind/mongogo-pod | kubectl apply -f -
@@ -86,8 +86,7 @@ kind-update: all kind-load kind-restart
 kind-update-apply: all kind-load kind-apply
 
 kind-logs:
-	kubectl logs -l app=mongogo --all-containers=true -f --tail=100
-	# kubectl logs -l app=mongogo --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go
+	kubectl logs -l app=mongogo --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go
 
 kind-describe:
 	kubectl describe nodes
