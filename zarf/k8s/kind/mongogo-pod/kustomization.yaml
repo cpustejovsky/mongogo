@@ -4,3 +4,7 @@ resources:
 - ../../base/mongogo-pod/
 patchesStrategicMerge:
 - ./kind-mongogo-patch.yaml
+images:
+- name: mongogo-api-image
+  newName: mongogo-api-amd64
+  newTag: "1.0"

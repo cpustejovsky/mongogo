@@ -5,7 +5,7 @@ COPY . /mongogo
 WORKDIR /mongogo
 RUN go mod download
 
-WORKDIR /mongogo/app
+WORKDIR /mongogo/app/services/default-api/
 RUN go build -o mongogo
 
 CMD [ "./mongogo" ]
