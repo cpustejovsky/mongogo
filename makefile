@@ -1,8 +1,7 @@
 SHELL := /bin/bash
 
 run:
-	cd app;\
-	go run main.go
+	go run app/services/starter-api/main.go | go run app/tooling/logfmt/main.go
 
 update:
 	go get -u -t -d -v ./...

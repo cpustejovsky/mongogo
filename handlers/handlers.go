@@ -9,13 +9,13 @@ import (
 
 	"github.com/cpustejovsky/mongogo/helpers"
 	"github.com/cpustejovsky/mongogo/internal/models/mongodb/user"
-	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
-	Logger     *log.Logger
+	Logger     *zap.SugaredLogger
 	Collection *mongo.Collection
 }
 
