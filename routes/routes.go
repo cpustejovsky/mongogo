@@ -7,11 +7,11 @@ import (
 	"github.com/cpustejovsky/mongogo/handlers"
 	"github.com/cpustejovsky/mongogo/middleware"
 	"github.com/justinas/alice"
-	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 )
 
-func Routes(log *logrus.Logger, client *mongo.Client) http.Handler {
+func Routes(log *zap.SugaredLogger, client *mongo.Client) http.Handler {
 
 	middlewares := middleware.Middleware{
 		Logger: log,

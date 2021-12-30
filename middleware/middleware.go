@@ -6,14 +6,13 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"github.com/cpustejovsky/mongogo/helpers"
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 )
 
 type Middleware struct {
-	Logger *log.Logger
+	Logger *zap.SugaredLogger
 }
 
 func (m *Middleware) SecureHeaders(next http.Handler) http.Handler {
@@ -38,7 +37,7 @@ func (m *Middleware) SetRequestId(next http.Handler) http.Handler {
 func (m *Middleware) LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value("requestId")
-		m.Logger.WithFields(logrus.Fields{"Remote Address": r.RemoteAddr, "Proto": r.Proto, "Method": r.Method, "URI": r.URL.RequestURI(), "ID": id}).Info("Request")
+		m.Logger.Infow("Request", "Remote Address", r.RemoteAddr, "Proto", r.Proto, "Method", r.Method, "URI", r.URL.RequestURI(), "ID", id)
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "ID", id)))
 	})
 }
@@ -48,7 +47,7 @@ func (m *Middleware) RecoverPanic(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				id := r.Context().Value("requestId")
-				m.Logger.WithFields(logrus.Fields{"URI": r.URL.RequestURI(), "ID": id}).Error("Error")
+				m.Logger.Errorw("Error", "URI", r.URL.RequestURI(), "ID", id)
 				w.Header().Set("Connection", "close")
 				helpers.ServerError(m.Logger, w, fmt.Errorf("%s", err))
 			}
