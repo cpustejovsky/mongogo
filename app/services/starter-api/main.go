@@ -13,7 +13,6 @@ import (
 	"github.com/ardanlabs/conf/v2"
 	"github.com/cpustejovsky/mongogo/foundation/logger"
 	"github.com/cpustejovsky/mongogo/routes"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -23,13 +22,16 @@ import (
 
 /*
 	TODO: Make sure environmental varibles can be loaded without godotenv and the conditional that replaces the conf value
-*/
-
-func init() {
-	if err := godotenv.Load("../../.env"); err != nil {
+	func init() {
+	if err := godotenv.Load("./../.env"); err != nil {
 		fmt.Println("No .env file found")
+		}
 	}
-}
+	mongoUriFromEnv := os.Getenv("MONGO_URI")
+	if mongoUriFromEnv != "" {
+		cfg.Web.Uri = mongoUriFromEnv
+	}
+*/
 
 var build = "develop"
 
@@ -91,12 +93,8 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("parsing config: %w", err)
 	}
 
-	mongoUriFromEnv := os.Getenv("MONGO_URI")
-	if mongoUriFromEnv != "" {
-		cfg.Web.Uri = mongoUriFromEnv
-	}
-
 	// DB Setup
+	log.Infow("Mongo Connection", "URI", cfg.Web.Uri)
 	clientOptions := options.Client().
 		ApplyURI(cfg.Web.Uri)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
