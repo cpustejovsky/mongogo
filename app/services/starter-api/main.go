@@ -2,32 +2,36 @@ package main
 
 import (
 	"context"
-	"flag"
+	"errors"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"runtime"
 	"time"
 
+	"github.com/ardanlabs/conf/v2"
 	"github.com/cpustejovsky/mongogo/foundation/logger"
 	"github.com/cpustejovsky/mongogo/routes"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/automaxprocs/maxprocs"
+
 	"go.uber.org/zap"
 )
 
-type Config struct {
-	Addr  string
-	Uri   string
-	Pprof string
-}
+/*
+	TODO: Make sure environmental varibles can be loaded without godotenv and the conditional that replaces the conf value
+*/
 
 func init() {
 	if err := godotenv.Load("../../.env"); err != nil {
 		fmt.Println("No .env file found")
 	}
 }
+
+var build = "develop"
 
 func main() {
 
@@ -46,22 +50,55 @@ func main() {
 }
 
 func run(log *zap.SugaredLogger) error {
-	// Flag and Config Setup
-	cfg := new(Config)
-	flag.StringVar(&cfg.Addr, "addr", ":5000", "HTTP network address")
-	flag.StringVar(&cfg.Uri, "uri", "mongodb://localhost:27017/mongogo", "MongoDB URI")
-	flag.StringVar(&cfg.Pprof, "pprof", ":4000", "Pprof host and port")
-	flag.Parse()
+	// =========================================================================
+	// GOMAXPROCS
 
-	// Environemntal Variables
+	// Set the correct number of threads for the service
+	// based on what is available either by the machine or quotas.
+	if _, err := maxprocs.Set(); err != nil {
+		return fmt.Errorf("maxprocs: %w", err)
+	}
+
+	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+
+	// =========================================================================
+	// Configuration
+	cfg := struct {
+		conf.Version
+		Web struct {
+			APIHost         string        `conf:"default:0.0.0.0:3001"`
+			DebugHost       string        `conf:"default:0.0.0.0:4000"`
+			ReadTimeout     time.Duration `conf:"default:5s"`
+			WriteTimeout    time.Duration `conf:"default:10s"`
+			IdleTimeout     time.Duration `conf:"default:120s"`
+			ShutdownTimeout time.Duration `conf:"default:20s"`
+			Uri             string        `conf:"default:mongodb://localhost:27017/mongogo,mask"`
+		}
+	}{
+		Version: conf.Version{
+			Build: build,
+			Desc:  "cpustejovsky MIT license",
+		},
+	}
+
+	const prefix = "DEFAULT"
+	help, err := conf.Parse(prefix, &cfg)
+	if err != nil {
+		if errors.Is(err, conf.ErrHelpWanted) {
+			fmt.Println(help)
+			return nil
+		}
+		return fmt.Errorf("parsing config: %w", err)
+	}
+
 	mongoUriFromEnv := os.Getenv("MONGO_URI")
 	if mongoUriFromEnv != "" {
-		cfg.Uri = mongoUriFromEnv
+		cfg.Web.Uri = mongoUriFromEnv
 	}
 
 	// DB Setup
 	clientOptions := options.Client().
-		ApplyURI(cfg.Uri)
+		ApplyURI(cfg.Web.Uri)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -72,7 +109,7 @@ func run(log *zap.SugaredLogger) error {
 	log.Infow("Successfully connected to database!")
 
 	srv := &http.Server{
-		Addr:    cfg.Addr,
+		Addr:    cfg.Web.APIHost,
 		Handler: routes.Routes(log, client),
 	}
 
