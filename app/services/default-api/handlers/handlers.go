@@ -4,8 +4,11 @@ import (
 	"expvar"
 	"net/http"
 	"net/http/pprof"
+	"os"
 
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/debug/checkgrp"
+	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/v1/testgrp"
+	"github.com/dimfeld/httptreemux/v5"
 	"go.uber.org/zap"
 )
 
@@ -41,6 +44,24 @@ func DebugMux(build string, log *zap.SugaredLogger) http.Handler {
 	}
 	mux.HandleFunc("/debug/readiness", cgh.Readiness)
 	mux.HandleFunc("/debug/liveness", cgh.Liveness)
+
+	return mux
+}
+
+// APIMuxConfig contains all the mandatory systems required by handlers.
+type APIMuxConfig struct {
+	Shutdown chan os.Signal
+	Log      *zap.SugaredLogger
+}
+
+// APIMux constructs an http.Handler with all application routes defined.
+func APIMux(cfg APIMuxConfig) *httptreemux.ContextMux {
+	mux := httptreemux.NewContextMux()
+
+	tgh := testgrp.Handlers{
+		Log: cfg.Log,
+	}
+	mux.Handle(http.MethodGet, "/v1/test", tgh.Test)
 
 	return mux
 }
