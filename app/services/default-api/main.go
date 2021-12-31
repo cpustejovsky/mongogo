@@ -15,7 +15,6 @@ import (
 	"github.com/ardanlabs/conf/v2"
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers"
 	"github.com/cpustejovsky/mongogo/foundation/logger"
-	"github.com/cpustejovsky/mongogo/routes"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -34,7 +33,7 @@ import (
 	if mongoUriFromEnv != "" {
 		cfg.Web.Uri = mongoUriFromEnv
 	}
-	
+
 	TODO: move database to it's business directory
 */
 
@@ -73,7 +72,7 @@ func run(log *zap.SugaredLogger) error {
 	cfg := struct {
 		conf.Version
 		Web struct {
-			APIHost         string        `conf:"default:0.0.0.0:3001"`
+			APIHost         string        `conf:"default:0.0.0.0:3000"`
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 			ReadTimeout     time.Duration `conf:"default:5s"`
 			WriteTimeout    time.Duration `conf:"default:10s"`
@@ -165,14 +164,29 @@ func run(log *zap.SugaredLogger) error {
 		log.Infow("startup", "status", "api router started", "host", api.Addr)
 		serverErrors <- api.ListenAndServe()
 	}()
+	// =========================================================================
+	// Shutdown
 
-	srv := &http.Server{
-		Addr:    cfg.Web.APIHost,
-		Handler: routes.Routes(log, client),
+	// Blocking main and waiting for shutdown.
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server error: %w", err)
+
+	case sig := <-shutdown:
+		log.Infow("shutdown", "status", "shutdown started", "signal", sig)
+		defer log.Infow("shutdown", "status", "shutdown complete", "signal", sig)
+
+		// Give outstanding requests a deadline for completion.
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.Web.ShutdownTimeout)
+		defer cancel()
+
+		// Asking listener to shutdown and shed load.
+		if err := api.Shutdown(ctx); err != nil {
+			api.Close()
+			return fmt.Errorf("could not stop server gracefully: %w", err)
+		}
 	}
 
-	// Server Start
-	err = srv.ListenAndServe()
-	log.Error(err)
+	log.Infow("stopping service")
 	return nil
 }
