@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 run:
-	go run app/services/starter-api/main.go | go run app/tooling/logfmt/main.go
+	go run app/services/default-api/main.go | go run app/tooling/logfmt/main.go
 
 update:
 	go get -u -t -d -v ./...
@@ -9,12 +9,12 @@ update:
 
 VERSION := 1.0
 
-all: mongogo
+all: default
 
-mongogo:
+default:
 	docker build \
 		-f zarf/docker/dockerfile \
-		-t mongogo-amd64:$(VERSION) \
+		-t default-api-amd64:$(VERSION) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
@@ -46,7 +46,7 @@ list:
 # ==============================================================================
 # Running from within k8s/kind
 
-KIND_CLUSTER := mongogo
+KIND_CLUSTER := default
 
 # Upgrade to latest Kind (>=v0.11): e.g. brew upgrade kind
 # For full Kind v0.11 release notes: https://github.com/kubernetes-sigs/kind/releases/tag/v0.11.0
@@ -58,7 +58,7 @@ kind-up:
 		--image kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6 \
 		--name $(KIND_CLUSTER) \
 		--config zarf/k8s/kind/kind-config.yaml
-	kubectl config set-context --current --namespace=mongogo-system
+	kubectl config set-context --current --namespace=default-system
 
 kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
@@ -68,27 +68,27 @@ kind-status:
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
 
-kind-status-mongogo:
-	kubectl get pods -o wide --watch --namespace=mongogo-system
+kind-status-default:
+	kubectl get pods -o wide --watch --namespace=default-system
 
 kind-load:
-	cd zarf/k8s/kind/mongogo-pod; kustomize edit set image mongogo-api-image=mongogo-api-amd64:$(VERSION)
-	kind load docker-image mongogo-amd64:$(VERSION) --name $(KIND_CLUSTER)
+	cd zarf/k8s/kind/default-pod; kustomize edit set image default-api-image=default-api-amd64:$(VERSION)
+	kind load docker-image default-api-amd64:$(VERSION) --name $(KIND_CLUSTER)
 
 kind-apply:
-	kustomize build zarf/k8s/kind/mongogo-pod | kubectl apply -f -
+	kustomize build zarf/k8s/kind/default-pod | kubectl apply -f -
 
 kind-restart:
-	kubectl rollout restart deployment mongogo-pod
+	kubectl rollout restart deployment default-pod
 
 kind-update: all kind-load kind-restart
 
 kind-update-apply: all kind-load kind-apply
 
 kind-logs:
-	kubectl logs -l app=mongogo --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go
+	kubectl logs -l app=default --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go
 
 kind-describe:
 	kubectl describe nodes
 	kubectl describe svc
-	kubectl describe pod -l app=mongogo
+	kubectl describe pod -l app=default
