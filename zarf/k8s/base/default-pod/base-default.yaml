@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: default-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: default-pod # Base POD name
+  namespace: default-system
+spec:
+  selector:
+    matchLabels:
+      app: default # Selector for POD name search.
+  template:
+    metadata:
+      labels:
+        app: default
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      containers:
+      - name: default-api
+        image: default-api-amd64:1.0
+        ports:
+        - name: default-api
+          containerPort: 3000
+        - name: default-debug
+          containerPort: 4000     
+        readinessProbe: # readiness probes mark the service available to accept traffic.
+          httpGet:
+            path: /debug/readiness
+            port: 4000
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 2
+        livenessProbe: # liveness probes mark the service alive or dead (to be restarted).
+          httpGet:
+            path: /debug/liveness
+            port: 4000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 2
+        env:
+        # - name: default_DB_HOST
+        #   valueFrom:
+        #     configMapKeyRef:
+        #       name: app-config
+        #       key: db_host
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_PODNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KUBERNETES_NAMESPACE_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: KUBERNETES_NODENAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: default-service
+  namespace: default-system
+spec:
+  type: ClusterIP
+  selector:
+    app: default
+  ports:
+  - name: default-api
+    port: 3000
+    targetPort: default-api
+  - name: default-debug
+    port: 4000          
+    targetPort: default-debug

@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongogo-pod
-  namespace: mongogo-system
+  name: default-pod
+  namespace: default-system
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: mongogo
+      app: default
   template:
     metadata:
       labels:
-        app: mongogo
+        app: default
     spec:
       containers:
-      # mongogo-api container configuration
-      - name: mongogo-api
+      # default-api container configuration
+      - name: default-api
         resources:
           limits:
             cpu: "2000m" # Up to 2 full cores

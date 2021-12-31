@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1
 FROM golang:1.17
 
-COPY . /mongogo
-WORKDIR /mongogo
+COPY . /default
+WORKDIR /default
 RUN go mod download
 
-WORKDIR /mongogo/app/services/default-api/
-RUN go build -o mongogo
+WORKDIR /default/app/services/default-api/
+RUN go build -o default
 
-CMD [ "./mongogo" ]
+CMD [ "./default" ]
