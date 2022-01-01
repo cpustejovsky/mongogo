@@ -140,9 +140,12 @@ func run(log *zap.SugaredLogger) error {
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	// Construct the mux for the API calls.
+	database := client.Database("mongogo")
+	collection := database.Collection("users")
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
-		Shutdown: shutdown,
-		Log:      log,
+		Shutdown:   shutdown,
+		Logger:     log,
+		Collection: collection,
 	})
 
 	// Construct a server to service the requests against the mux.
