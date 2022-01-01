@@ -9,6 +9,7 @@ import (
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/debug/checkgrp"
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/v1/testgrp"
 	"github.com/dimfeld/httptreemux/v5"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
 
@@ -50,18 +51,25 @@ func DebugMux(build string, log *zap.SugaredLogger) http.Handler {
 
 // APIMuxConfig contains all the mandatory systems required by handlers.
 type APIMuxConfig struct {
-	Shutdown chan os.Signal
-	Log      *zap.SugaredLogger
+	Shutdown   chan os.Signal
+	Logger     *zap.SugaredLogger
+	Collection *mongo.Collection
 }
 
 // APIMux constructs an http.Handler with all application routes defined.
 func APIMux(cfg APIMuxConfig) *httptreemux.ContextMux {
 	mux := httptreemux.NewContextMux()
-
 	tgh := testgrp.Handlers{
-		Log: cfg.Log,
+		Logger:     cfg.Logger,
+		Collection: cfg.Collection,
 	}
 	mux.Handle(http.MethodGet, "/v1/test", tgh.Test)
+	mux.Handle(http.MethodGet, "/v1/ping", tgh.Ping)
+	mux.Handle(http.MethodGet, "/v1/panic", tgh.PingPanic)
+	mux.Handle(http.MethodPost, "/v1/user/new", tgh.Create)
+	mux.Handle(http.MethodGet, "/v1/user/:id", tgh.Fetch)
+	mux.Handle(http.MethodPut, "/v1/user/:id", tgh.Update)
+	mux.Handle(http.MethodDelete, "/v1/user/:id", tgh.Delete)
 
 	return mux
 }
