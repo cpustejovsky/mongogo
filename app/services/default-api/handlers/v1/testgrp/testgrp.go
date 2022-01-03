@@ -1,12 +1,14 @@
 package testgrp
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/cpustejovsky/mongogo/foundation/web"
 	"github.com/cpustejovsky/mongogo/helpers"
 	"github.com/cpustejovsky/mongogo/internal/models/mongodb/user"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,15 +22,14 @@ type Handlers struct {
 	Collection *mongo.Collection
 }
 
-func (h Handlers) Test(w http.ResponseWriter, r *http.Request) {
+func (h Handlers) Test(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	status := struct {
 		Status string
 	}{
-		Status: "OK",
+		Status: "Howdy!",
 	}
-	json.NewEncoder(w).Encode(status)
 	statusCode := http.StatusOK
-	h.Logger.Infow("readiness", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
+	return web.Respond(ctx, w, status, statusCode)
 }
 
 func (h *Handlers) Ping(w http.ResponseWriter, r *http.Request) {

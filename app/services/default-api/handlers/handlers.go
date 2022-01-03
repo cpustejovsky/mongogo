@@ -8,7 +8,7 @@ import (
 
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/debug/checkgrp"
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/v1/testgrp"
-	"github.com/dimfeld/httptreemux/v5"
+	"github.com/cpustejovsky/mongogo/foundation/web"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -57,19 +57,29 @@ type APIMuxConfig struct {
 }
 
 // APIMux constructs an http.Handler with all application routes defined.
-func APIMux(cfg APIMuxConfig) *httptreemux.ContextMux {
-	mux := httptreemux.NewContextMux()
+func APIMux(cfg APIMuxConfig) *web.App {
+
+	app := web.NewApp(
+		cfg.Shutdown,
+		// mid.Logger(cfg.Logger),
+	)
+
+	v1(app, cfg)
+
+	return app
+}
+
+func v1(app *web.App, cfg APIMuxConfig) {
+	const version = "v1"
 	tgh := testgrp.Handlers{
 		Logger:     cfg.Logger,
 		Collection: cfg.Collection,
 	}
-	mux.Handle(http.MethodGet, "/v1/test", tgh.Test)
-	mux.Handle(http.MethodGet, "/v1/ping", tgh.Ping)
-	mux.Handle(http.MethodGet, "/v1/panic", tgh.PingPanic)
-	mux.Handle(http.MethodPost, "/v1/user/new", tgh.Create)
-	mux.Handle(http.MethodGet, "/v1/user/:id", tgh.Fetch)
-	mux.Handle(http.MethodPut, "/v1/user/:id", tgh.Update)
-	mux.Handle(http.MethodDelete, "/v1/user/:id", tgh.Delete)
-
-	return mux
+	app.Handle(http.MethodGet, version, "/test", tgh.Test)
+	// app.Handle(http.MethodGet, version, "/ping", tgh.Ping)
+	// app.Handle(http.MethodGet, version, "/panic", tgh.PingPanic)
+	// app.Handle(http.MethodPost, version, "/user/new", tgh.Create)
+	// app.Handle(http.MethodGet, version, "/user/:id", tgh.Fetch)
+	// app.Handle(http.MethodPut, version, "/user/:id", tgh.Update)
+	// app.Handle(http.MethodDelete, version, "/user/:id", tgh.Delete)
 }
