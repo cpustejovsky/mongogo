@@ -76,10 +76,10 @@ func v1(app *web.App, cfg APIMuxConfig) {
 		Collection: cfg.Collection,
 	}
 	app.Handle(http.MethodGet, version, "/test", tgh.Test)
-	// app.Handle(http.MethodGet, version, "/ping", tgh.Ping)
-	// app.Handle(http.MethodGet, version, "/panic", tgh.PingPanic)
-	// app.Handle(http.MethodPost, version, "/user/new", tgh.Create)
-	// app.Handle(http.MethodGet, version, "/user/:id", tgh.Fetch)
-	// app.Handle(http.MethodPut, version, "/user/:id", tgh.Update)
-	// app.Handle(http.MethodDelete, version, "/user/:id", tgh.Delete)
+	app.Handle(http.MethodGet, version, "/ping", tgh.Ping)
+	app.Handle(http.MethodGet, version, "/panic", tgh.TestPanic)
+	app.Handle(http.MethodPost, version, "/user/new", tgh.Create)
+	app.Handle(http.MethodGet, version, "/user/:id", tgh.Fetch)
+	app.Handle(http.MethodPut, version, "/user/:id", tgh.Update)
+	app.Handle(http.MethodDelete, version, "/user/:id", tgh.Delete)
 }
