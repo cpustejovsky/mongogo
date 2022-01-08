@@ -8,6 +8,7 @@ import (
 
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/debug/checkgrp"
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/v1/testgrp"
+	"github.com/cpustejovsky/mongogo/business/web/mid"
 	"github.com/cpustejovsky/mongogo/foundation/web"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
@@ -61,7 +62,7 @@ func APIMux(cfg APIMuxConfig) *web.App {
 
 	app := web.NewApp(
 		cfg.Shutdown,
-		// mid.Logger(cfg.Logger),
+		mid.Logger(cfg.Logger),
 	)
 
 	v1(app, cfg)
