@@ -19,7 +19,7 @@ import (
 
 // Handlers manages the set of check enpoints.
 type Handlers struct {
-	Logger     *zap.SugaredLogger
+	Log     *zap.SugaredLogger
 	Collection *mongo.Collection
 }
 
@@ -54,7 +54,7 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 			fmt.Fprint(w, err)
 			return web.Respond(ctx, w, err, 400)
 		}
-		helpers.ServerError(h.Logger, w, err)
+		helpers.ServerError(h.Log, w, err)
 		return web.Respond(ctx, w, err, 400)
 	}
 	missingProperties := []string{}
@@ -78,7 +78,7 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	ju, err := json.Marshal(user)
 	if err != nil {
-		h.Logger.Error(err)
+		h.Log.Error(err)
 		fmt.Fprint(w, errors.New("could not marshall object"))
 	}
 	return web.Respond(ctx, w, string(ju), 200)
@@ -90,12 +90,12 @@ func (h *Handlers) Fetch(ctx context.Context, w http.ResponseWriter, r *http.Req
 	//find user by id and return
 	user, err := user.Fetch(h.Collection, id)
 	if err != nil {
-		h.Logger.Error(err)
+		h.Log.Error(err)
 		return web.Respond(ctx, w, errors.New("unable to fetch item"), 400)
 	}
 	ju, err := json.Marshal(user)
 	if err != nil {
-		h.Logger.Error(err)
+		h.Log.Error(err)
 		return web.Respond(ctx, w, errors.New("could not marshall object"), 400)
 	}
 	return web.Respond(ctx, w, string(ju), 200)
@@ -135,7 +135,7 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	ju, err := json.Marshal(user)
 	if err != nil {
-		h.Logger.Error(err)
+		h.Log.Error(err)
 		return web.Respond(ctx, w, errors.New("could not marshall object"), 400)
 	}
 	return web.Respond(ctx, w, string(ju), 200)
