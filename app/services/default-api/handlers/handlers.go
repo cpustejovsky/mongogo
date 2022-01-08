@@ -65,6 +65,8 @@ func APIMux(cfg APIMuxConfig) *web.App {
 		mid.Logger(cfg.Log),
 		mid.Errors(cfg.Log),
 		mid.Metrics(),
+		//Panics should always be the closest onion ring
+		mid.Panics(),
 	)
 
 	v1(app, cfg)
