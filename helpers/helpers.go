@@ -6,19 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"runtime/debug"
 
 	"github.com/cpustejovsky/mongogo/internal/models"
-	"go.uber.org/zap"
 )
 
 var EmptyBodyError = errors.New("JSON body is empty")
-
-func ServerError(log *zap.SugaredLogger, w http.ResponseWriter, err error) {
-	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	log.Error(trace)
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-}
 
 //TODO: replace with generics
 func DecodeUserForm(r *http.Request) (models.FormUser, error) {
@@ -48,5 +40,5 @@ func MissingPropertyError(props []string) error {
 		}
 		propStr += prop
 	}
-	return errors.New(fmt.Sprintf(MissingPropertyErrorTemplateString, propStr))
+	return fmt.Errorf(MissingPropertyErrorTemplateString, propStr)
 }

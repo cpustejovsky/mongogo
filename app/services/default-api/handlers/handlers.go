@@ -8,6 +8,7 @@ import (
 
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/debug/checkgrp"
 	"github.com/cpustejovsky/mongogo/app/services/default-api/handlers/v1/testgrp"
+	"github.com/cpustejovsky/mongogo/business/web/mid"
 	"github.com/cpustejovsky/mongogo/foundation/web"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
@@ -52,7 +53,7 @@ func DebugMux(build string, log *zap.SugaredLogger) http.Handler {
 // APIMuxConfig contains all the mandatory systems required by handlers.
 type APIMuxConfig struct {
 	Shutdown   chan os.Signal
-	Logger     *zap.SugaredLogger
+	Log        *zap.SugaredLogger
 	Collection *mongo.Collection
 }
 
@@ -61,7 +62,11 @@ func APIMux(cfg APIMuxConfig) *web.App {
 
 	app := web.NewApp(
 		cfg.Shutdown,
-		// mid.Logger(cfg.Logger),
+		mid.Logger(cfg.Log),
+		mid.Errors(cfg.Log),
+		mid.Metrics(),
+		//Panics should always be the closest onion ring
+		mid.Panics(),
 	)
 
 	v1(app, cfg)
@@ -72,14 +77,14 @@ func APIMux(cfg APIMuxConfig) *web.App {
 func v1(app *web.App, cfg APIMuxConfig) {
 	const version = "v1"
 	tgh := testgrp.Handlers{
-		Logger:     cfg.Logger,
+		Log:        cfg.Log,
 		Collection: cfg.Collection,
 	}
 	app.Handle(http.MethodGet, version, "/test", tgh.Test)
-	// app.Handle(http.MethodGet, version, "/ping", tgh.Ping)
-	// app.Handle(http.MethodGet, version, "/panic", tgh.PingPanic)
-	// app.Handle(http.MethodPost, version, "/user/new", tgh.Create)
-	// app.Handle(http.MethodGet, version, "/user/:id", tgh.Fetch)
-	// app.Handle(http.MethodPut, version, "/user/:id", tgh.Update)
-	// app.Handle(http.MethodDelete, version, "/user/:id", tgh.Delete)
+	app.Handle(http.MethodGet, version, "/error", tgh.TestError)
+	app.Handle(http.MethodGet, version, "/panic", tgh.TestPanic)
+	app.Handle(http.MethodPost, version, "/user/new", tgh.Create)
+	app.Handle(http.MethodGet, version, "/user/:id", tgh.Fetch)
+	app.Handle(http.MethodPut, version, "/user/:id", tgh.Update)
+	app.Handle(http.MethodDelete, version, "/user/:id", tgh.Delete)
 }
