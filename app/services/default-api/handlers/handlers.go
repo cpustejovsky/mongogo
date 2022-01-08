@@ -53,7 +53,7 @@ func DebugMux(build string, log *zap.SugaredLogger) http.Handler {
 // APIMuxConfig contains all the mandatory systems required by handlers.
 type APIMuxConfig struct {
 	Shutdown   chan os.Signal
-	Log     *zap.SugaredLogger
+	Log        *zap.SugaredLogger
 	Collection *mongo.Collection
 }
 
@@ -64,6 +64,7 @@ func APIMux(cfg APIMuxConfig) *web.App {
 		cfg.Shutdown,
 		mid.Logger(cfg.Log),
 		mid.Errors(cfg.Log),
+		mid.Metrics(),
 	)
 
 	v1(app, cfg)
@@ -74,7 +75,7 @@ func APIMux(cfg APIMuxConfig) *web.App {
 func v1(app *web.App, cfg APIMuxConfig) {
 	const version = "v1"
 	tgh := testgrp.Handlers{
-		Log:     cfg.Log,
+		Log:        cfg.Log,
 		Collection: cfg.Collection,
 	}
 	app.Handle(http.MethodGet, version, "/test", tgh.Test)
