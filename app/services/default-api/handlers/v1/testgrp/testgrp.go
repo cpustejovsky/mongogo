@@ -54,7 +54,6 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 			fmt.Fprint(w, err)
 			return web.Respond(ctx, w, err, 400)
 		}
-		helpers.ServerError(h.Log, w, err)
 		return web.Respond(ctx, w, err, 400)
 	}
 	missingProperties := []string{}
