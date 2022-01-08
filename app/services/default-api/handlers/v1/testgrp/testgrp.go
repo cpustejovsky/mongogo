@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strings"
 
+	"github.com/cpustejovsky/mongogo/business/sys/validate"
 	"github.com/cpustejovsky/mongogo/foundation/web"
 	"github.com/cpustejovsky/mongogo/helpers"
 	"github.com/cpustejovsky/mongogo/internal/models/mongodb/user"
@@ -19,7 +19,7 @@ import (
 
 // Handlers manages the set of check enpoints.
 type Handlers struct {
-	Log     *zap.SugaredLogger
+	Log        *zap.SugaredLogger
 	Collection *mongo.Collection
 }
 
@@ -33,14 +33,19 @@ func (h *Handlers) Test(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	return web.Respond(ctx, w, status, statusCode)
 }
 
-func (h *Handlers) Ping(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	return web.Respond(ctx, w, []byte("OK"), 200)
+func (h *Handlers) TestError(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	id := r.Context().Value("requestId")
+	idstr := fmt.Sprintf("Request ID: %v\n", id)
+	if true {
+		return validate.NewRequestError(errors.New("trusted error"), http.StatusBadRequest)
+	}
+	return web.Respond(ctx, w, idstr, 200)
 }
 
 func (h *Handlers) TestPanic(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	id := r.Context().Value("requestId")
 	idstr := fmt.Sprintf("Request ID: %v\n", id)
-	if n := rand.Intn(100); n%2 == 0 {
+	if true {
 		panic("testing panic!")
 	}
 	return web.Respond(ctx, w, idstr, 200)

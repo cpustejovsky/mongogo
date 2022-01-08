@@ -144,7 +144,7 @@ func run(log *zap.SugaredLogger) error {
 	collection := database.Collection("users")
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
 		Shutdown:   shutdown,
-		Logger:     log,
+		Log:        log,
 		Collection: collection,
 	})
 
@@ -167,6 +167,7 @@ func run(log *zap.SugaredLogger) error {
 		log.Infow("startup", "status", "api router started", "host", api.Addr)
 		serverErrors <- api.ListenAndServe()
 	}()
+	
 	// =========================================================================
 	// Shutdown
 
