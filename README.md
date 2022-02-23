@@ -29,3 +29,5 @@ Starter kit for a Go service using MongoDB as database
   * Potentially handlerHelpers?
   * Generalize handlers package, include these helpers, and have a specific user handlers repo?
 * TBD
+
+Testing rebase and merge
